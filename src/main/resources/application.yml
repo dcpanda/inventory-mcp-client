@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: inventory-mcp-client
+  ai:
+    openai:
+      base-url: http://localhost:1234/
+      api-key: lm-studio
+    mcp:
+      client:
+        enabled: true
+        type: ASYNC
+        toolcallback:
+          enabled: true
+        sse:
+          connections:
+            inventory-server:
+              url: http://localhost:8080
+              sse-endpoint: /mcp
+
+server:
+  port: 8081
+
+logging:
+  level:
+    org.springframework.ai.mcp: DEBUG
+    io.modelcontextprotocol: DEBUG
