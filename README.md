@@ -108,10 +108,10 @@ The LLM is instructed via the system prompt to use these tools whenever a user a
 
 ## Development
 
-- **Main Application**: `com.example.inventory.InventoryClientApplication`
-- **AI Logic**: `com.example.inventory.ChatController` handles the `ChatClient` integration.
-- **MCP Client**: `com.example.inventory.McpController` manages direct interaction with the `McpService`.
-- **MCP Service**: `com.example.inventory.McpService` encapsulates interaction with `McpAsyncClient`.
+- **Main Application**: `io.github.dcpanda.inventory.InventoryClientApplication`
+- **AI Logic**: `io.github.dcpanda.inventory.ChatController` handles the `ChatClient` integration.
+- **MCP Client**: `io.github.dcpanda.inventory.McpController` manages direct interaction with the `McpService`.
+- **MCP Service**: `io.github.dcpanda.inventory.McpService` encapsulates interaction with `McpAsyncClient`.
 
 ### Testing
 
