@@ -15,36 +15,24 @@ import java.util.List;
 @RequestMapping("/mcp")
 public class McpController {
 
-    private final McpAsyncClient mcpAsyncClient;
+    private final McpService mcpService;
 
-    public McpController(List<McpAsyncClient> mcpAsyncClients) {
-        System.out.println("Number of MCP clients: " + mcpAsyncClients.size());
-        this.mcpAsyncClient = mcpAsyncClients.isEmpty() ? null : mcpAsyncClients.get(0);
+    public McpController(McpService mcpService) {
+        this.mcpService = mcpService;
     }
 
     @GetMapping("/tools")
     public Mono<List<McpSchema.Tool>> listTools() {
-        if (mcpAsyncClient == null) {
-            return Mono.error(new RuntimeException("No MCP client available"));
-        }
-        return mcpAsyncClient.listTools(null).map(McpSchema.ListToolsResult::tools);
+        return mcpService.listTools();
     }
 
     @GetMapping("/resources")
     public Mono<List<McpSchema.ResourceTemplate>> listResourceTemplates() {
-        return mcpAsyncClient.listResourceTemplates(null).map(McpSchema.ListResourceTemplatesResult::resourceTemplates);
+        return mcpService.listResourceTemplates();
     }
 
     @GetMapping("/resources/{warehouseCode}")
     public Mono<String> getResource(@PathVariable String warehouseCode) {
-        var resourceUri = "inventory://warehouse/" + warehouseCode;
-        return mcpAsyncClient.readResource(new McpSchema.ReadResourceRequest(resourceUri))
-                .map(response -> {
-                    var content = response.contents().get(0);
-                    if (content instanceof McpSchema.TextResourceContents textContent) {
-                        return textContent.text();
-                    }
-                    return "Not a text resource";
-                });
+        return mcpService.getResource(warehouseCode);
     }
 }
