@@ -3,6 +3,7 @@ package io.github.dcpanda.inventory;
 import io.modelcontextprotocol.spec.McpSchema;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.util.List;
 
@@ -20,9 +21,11 @@ public class InventoryToolsTest {
         when(mcpService.listResourceTemplates()).thenReturn(Mono.just(List.of(template)));
         
         InventoryTools tools = new InventoryTools(mcpService);
-        List<String> warehouses = tools.listWarehouses();
+        Mono<List<String>> warehousesMono = tools.listWarehouses();
         
-        assertThat(warehouses).contains("WH-001: Main Warehouse");
+        StepVerifier.create(warehousesMono)
+                .assertNext(warehouses -> assertThat(warehouses).contains("WH-001: Main Warehouse"))
+                .verifyComplete();
     }
 
     @Test
@@ -31,8 +34,10 @@ public class InventoryToolsTest {
         when(mcpService.getResource("WH-001")).thenReturn(Mono.just("Inventory: SKU-123 x 10"));
         
         InventoryTools tools = new InventoryTools(mcpService);
-        String inventory = tools.getWarehouseInventory("WH-001");
+        Mono<String> inventoryMono = tools.getWarehouseInventory("WH-001");
         
-        assertThat(inventory).isEqualTo("Inventory: SKU-123 x 10");
+        StepVerifier.create(inventoryMono)
+                .assertNext(inventory -> assertThat(inventory).isEqualTo("Inventory: SKU-123 x 10"))
+                .verifyComplete();
     }
 }

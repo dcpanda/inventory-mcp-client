@@ -19,23 +19,29 @@ public class McpServiceImpl implements McpService {
     @Override
     public Mono<List<McpSchema.Tool>> listTools() {
         if (mcpAsyncClient == null) {
-            return Mono.error(new RuntimeException("No MCP client available"));
+            return Mono.error(new McpConnectionException("No MCP client available"));
         }
-        return mcpAsyncClient.listTools(null).map(McpSchema.ListToolsResult::tools);
+        return mcpAsyncClient.listTools(null)
+                .map(McpSchema.ListToolsResult::tools)
+                .onErrorMap(e -> !(e instanceof McpConnectionException),
+                        e -> new McpResourceAccessException("Failed to list tools", e));
     }
 
     @Override
     public Mono<List<McpSchema.ResourceTemplate>> listResourceTemplates() {
         if (mcpAsyncClient == null) {
-            return Mono.error(new RuntimeException("No MCP client available"));
+            return Mono.error(new McpConnectionException("No MCP client available"));
         }
-        return mcpAsyncClient.listResourceTemplates(null).map(McpSchema.ListResourceTemplatesResult::resourceTemplates);
+        return mcpAsyncClient.listResourceTemplates(null)
+                .map(McpSchema.ListResourceTemplatesResult::resourceTemplates)
+                .onErrorMap(e -> !(e instanceof McpConnectionException),
+                        e -> new McpResourceAccessException("Failed to list resource templates", e));
     }
 
     @Override
     public Mono<String> getResource(String warehouseCode) {
         if (mcpAsyncClient == null) {
-            return Mono.error(new RuntimeException("No MCP client available"));
+            return Mono.error(new McpConnectionException("No MCP client available"));
         }
         var resourceUri = "inventory://warehouse/" + warehouseCode;
         return mcpAsyncClient.readResource(new McpSchema.ReadResourceRequest(resourceUri))
@@ -45,6 +51,8 @@ public class McpServiceImpl implements McpService {
                         return textContent.text();
                     }
                     return "Not a text resource";
-                });
+                })
+                .onErrorMap(e -> !(e instanceof McpConnectionException),
+                        e -> new McpResourceAccessException("Failed to read resource: " + warehouseCode, e));
     }
 }

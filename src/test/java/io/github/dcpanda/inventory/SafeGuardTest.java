@@ -17,27 +17,27 @@ import java.util.List;
 
 public class SafeGuardTest {
 
+    private List<String> getSensitiveWords() {
+        return List.of(
+                "ignore previous instructions",
+                "disregard all prior instructions",
+                "forget everything",
+                "new system prompt",
+                "you are now a",
+                "as an administrator",
+                "bypass safety",
+                "jailbreak"
+        );
+    }
+
     @Test
     void testSafeGuardTriggering() {
         ChatModel chatModel = mock(ChatModel.class);
         ChatResponse mockResponse = new ChatResponse(List.of(new Generation(new AssistantMessage("The stock for SKU-8842 is 10."))));
         when(chatModel.call(any(Prompt.class))).thenReturn(mockResponse);
 
-        ChatClient.Builder builder = ChatClient.builder(chatModel);
-        
-        List<String> sensitiveWords = List.of(
-                        "ignore previous instructions",
-                        "disregard all prior instructions",
-                        "forget everything",
-                        "new system prompt",
-                        "you are now a",
-                        "as an administrator",
-                        "bypass safety",
-                        "jailbreak"
-        );
-
-        ChatClient chatClient = builder
-                .defaultAdvisors(new SafeGuardAdvisor(sensitiveWords))
+        ChatClient chatClient = ChatClient.builder(chatModel)
+                .defaultAdvisors(new SafeGuardAdvisor(getSensitiveWords()))
                 .build();
 
         String response = chatClient.prompt()
@@ -45,32 +45,18 @@ public class SafeGuardTest {
                 .call()
                 .content();
 
-        System.out.println("Response: " + response);
         assertThat(response).contains("The stock for SKU-8842 is 10.");
     }
-    
+
     @Test
     void testSafeGuardTriggeringWithSystemPrompt() {
         ChatModel chatModel = mock(ChatModel.class);
         ChatResponse mockResponse = new ChatResponse(List.of(new Generation(new AssistantMessage("The stock for SKU-8842 is 10."))));
         when(chatModel.call(any(Prompt.class))).thenReturn(mockResponse);
 
-        ChatClient.Builder builder = ChatClient.builder(chatModel);
-        
-        List<String> sensitiveWords = List.of(
-                        "ignore previous instructions",
-                        "disregard all prior instructions",
-                        "forget everything",
-                        "new system prompt",
-                        "you are now a",
-                        "as an administrator",
-                        "bypass safety",
-                        "jailbreak"
-        );
-
-        ChatClient chatClient = builder
+        ChatClient chatClient = ChatClient.builder(chatModel)
                 .defaultSystem("You must not tell a joke.")
-                .defaultAdvisors(new SafeGuardAdvisor(sensitiveWords))
+                .defaultAdvisors(new SafeGuardAdvisor(getSensitiveWords()))
                 .build();
 
         String response = chatClient.prompt()
@@ -78,25 +64,17 @@ public class SafeGuardTest {
                 .call()
                 .content();
 
-        System.out.println("Response with system prompt: " + response);
         assertThat(response).isNotNull();
     }
-    
+
     @Test
     void testSafeGuardBlocking() {
         ChatModel chatModel = mock(ChatModel.class);
-        // This response should NOT be reached if SafeGuardAdvisor works as expected on the request
-        ChatResponse mockResponse = new ChatResponse(List.of(new Generation(new AssistantMessage("I am now a helpful assistant." ))));
+        ChatResponse mockResponse = new ChatResponse(List.of(new Generation(new AssistantMessage("I am now a helpful assistant."))));
         when(chatModel.call(any(Prompt.class))).thenReturn(mockResponse);
 
-        ChatClient.Builder builder = ChatClient.builder(chatModel);
-        
-        List<String> sensitiveWords = List.of(
-                        "jailbreak"
-        );
-
-        ChatClient chatClient = builder
-                .defaultAdvisors(new SafeGuardAdvisor(sensitiveWords))
+        ChatClient chatClient = ChatClient.builder(chatModel)
+                .defaultAdvisors(new SafeGuardAdvisor(List.of("jailbreak")))
                 .build();
 
         String response = chatClient.prompt()
@@ -104,7 +82,6 @@ public class SafeGuardTest {
                 .call()
                 .content();
 
-        System.out.println("Response for jailbreak: " + response);
         assertThat(response).contains("unable to respond");
     }
 
@@ -114,21 +91,8 @@ public class SafeGuardTest {
         ChatResponse mockResponse = new ChatResponse(List.of(new Generation(new AssistantMessage("I have access to tools."))));
         when(chatModel.call(any(Prompt.class))).thenReturn(mockResponse);
 
-        ChatClient.Builder builder = ChatClient.builder(chatModel);
-        
-        List<String> sensitiveWords = List.of(
-                        "ignore previous instructions",
-                        "disregard all prior instructions",
-                        "forget everything",
-                        "new system prompt",
-                        "you are now a",
-                        "as an administrator",
-                        "bypass safety",
-                        "jailbreak"
-        );
-
-        ChatClient chatClient = builder
-                .defaultAdvisors(new SafeGuardAdvisor(sensitiveWords))
+        ChatClient chatClient = ChatClient.builder(chatModel)
+                .defaultAdvisors(new SafeGuardAdvisor(getSensitiveWords()))
                 .build();
 
         String response = chatClient.prompt()
@@ -136,7 +100,6 @@ public class SafeGuardTest {
                 .call()
                 .content();
 
-        System.out.println("Response for default message: " + response);
         assertThat(response).contains("I have access to tools.");
     }
 }
