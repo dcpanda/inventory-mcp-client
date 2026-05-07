@@ -1,5 +1,7 @@
 # Inventory MCP Client
 
+⚠️ **This is an example repository.** To deploy this code to production, please review [TODO_PRODUCTION.md](TODO_PRODUCTION.md) for required enterprise-grade improvements (security, resilience, observability, etc.).
+
 A Spring Boot application that serves as a Model Context Protocol (MCP) client, integrating with a legacy inventory system via Spring AI.
 See the GitHub repository for [Inventory MCP Server](https://github.com/dcpanda/inventory-mcp-server) more details.
 
